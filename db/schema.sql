@@ -34,9 +34,8 @@ VALUES
     ("Sales"),
     ("Engineering"),
     ("Finance"),
-    ("Legal"),
-    ("Corp");
-    
+    ("Legal");
+   
 
 INSERT INTO roles (title, salary, department_id)
 VALUES

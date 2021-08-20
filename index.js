@@ -1,16 +1,17 @@
 const inquirer = require('inquirer');
 const mySQL = require('mysql2');
 const cTable = require('console.table');
+const { response } = require('express');
 
 const connection = mySQL.createConnection (
     {
         host: 'localhost',
         user: 'root',
-        //TODO: change this before upload to github
+        //TODO: Change to your MySQL password
         password: 'Surveyor!47',
         database: 'company_db'
     },
-    console.log("Connection to 'company_db' established")
+    console.log("Connection to 'company_db' established\n")
 )
 
 startPoint = () => {
@@ -61,40 +62,17 @@ startPoint = () => {
                     connection.end();
                         break;
             }
-
-            // if (answers.taskSelector === 'view all departments') {
-            //     viewDepartments();
-            // } else if (answers.taskSelector === 'add a department') {
-            //     addDepartment();
-            // } else if (answers.taskSelector === 'view all roles') {
-            //     viewRoles();
-            // } else if (answers.taskSelector === 'add a role') {
-            //     addRole();
-            // } else if (answers.taskSelector === 'view all employee') {
-            //     viewEmployee();
-            // } else if (answers.taskSelector === 'add an employee') {
-            //     addEmployee();
-            // } else if (answers.taskSelector === 'update an employee role') {
-            //     updateRole();
-            // } else if (answers.taskSelector === 'exit program') {
-            //     console.log('\nSo long pal!')
-            // } else {
-            //     console.log(err)
-            //     startPoint();
-            // }
         })
 };
 
 viewDepartments = () => {
-    //TODO: populate console with all departments here
+    //TODO: fix output
     connection.query(
-        `SELECT * FROM departments`, function (err, res) {
-
+        `SELECT * FROM department`, function (err, result) {
+            console.table(result)
         }
-    )
-
-    console.log('view departments selected'),
-    startPoint();
+    );
+   startPoint()
 };
 
 addDepartment = () => {
@@ -112,15 +90,27 @@ addDepartment = () => {
             }
         ]).then((answers) => {
             //TODO: figure out how to add to mysql stuff
-        })
-    startPoint();
+            const sql = `INSERT INTO department (department_name)
+            VALUE (?)`
+        const params = answers.newDepartment;
+
+        connection.query(sql, params, (err,result) => {
+            if (err) {
+                console.log(err)
+            }
+            });   
+            console.log("\nNew department added!\n") 
+            startPoint();
+        });
 };
 
 viewRoles = () => {
-
-        //TODO: populate console with all roles here
-
-    console.log('view role selected'),
+        //TODO: fix output
+        connection.query(
+            `SELECT * FROM roles`, function (err, result) {
+                console.table(result)
+            }
+        );
     startPoint();
 };
 
@@ -150,15 +140,28 @@ addRole = () => {
             }
         ]).then((answers) => {
             //TODO: figure out how to add to mysql stuff
-        }).then(startPoint());
-    
+            const sql = `INSERT INTO roles
+            VALUE (?)`
+        const params = `${answers.newRole}, ${answers.roleSalary}, ${answers.departmentID}`
+
+        connection.query(sql, params, (err,result) => {
+            if (err) {
+                console.log(err)
+            } else {
+                console.log('New role added')
+            }
+            });    
+            startPoint()
+        });
 };
 
 viewEmployee = () => {
-
-        //TODO: populate console with all employees here
-
-    console.log('view employee selected'),
+        //TODO: fix output
+        connection.query(
+            `SELECT * FROM employee`, function (err, result) {
+                console.table(result)
+            }
+        );
     startPoint();
 };
 
@@ -172,12 +175,8 @@ addEmployee = () => {
         .prompt([
             {
                 type: 'input',
-                name: 'newEmployee',
-                message: "What is the name of your new Employee?"
-            }, {
-                type: 'input',
                 name: 'firstName',
-                message: "What is their first name?"
+                message: "What is the first name of your new Employee?"
             }, {
                 type: 'input',
                 name: 'lastName',
@@ -199,8 +198,20 @@ addEmployee = () => {
             }
         ]).then((answers) => {
             //TODO: figure out how to add to mysql stuff
+            const sql = `INSERT INTO employee
+                VALUE (?)`
+            const params = `${answers.firstName}, ${answers.lastName}, ${answers.roleID}, ${answers.managerID}`
+
+            connection.query(sql, params, (err,result) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    console.log('New employee added')
+                }
+            });    
+        startPoint()
         })
-    startPoint();
+    
 };
 
 updateRole = () => {
