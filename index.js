@@ -15,7 +15,11 @@ const connection = mySQL.createConnection (
 )
 
 startPoint = () => {
-
+    console.log(`
+    Welcome to the supervisors
+    terminal. Select an option
+    below to begin!
+    `)
     inquirer
         .prompt([
             {
@@ -115,6 +119,36 @@ viewRoles = () => {
 };
 
 addRole = () => {
+    // Call DB to pull all current roles from list 
+    
+    const resultArray = [];
+
+        connection.query(
+        `SELECT * FROM roles`, function (err, result) {
+            
+            roleArray.push(result)
+            console.log(`\nThis is the filled array: ${result}`)
+            console.log(`role array: ${roleArray}`)
+            console.log(`role array: ${resultArray}`)
+        },
+        
+    )
+
+    addRole2(roleArray);
+}
+
+addRole = () => {
+    const roleArray = [];
+    
+    connection.query(
+        `SELECT * FROM department`, function (err, result) {  
+            //test 1
+            for (i = 0; i < result.length; i++) {
+                roleArray.push(JSON.stringify(result[i].department_name)),
+                console.log;
+            }
+        }     
+    ),
     console.log(`
     ==================
        Role Creator
@@ -134,9 +168,7 @@ addRole = () => {
                 type: 'list',
                 name:'departmentID',
                 message: "Which department does this role belong to?",
-                choices: [
-                    //TODO: figure out how to access the department DB for this entry
-                ]
+                choices: roleArray
             }
         ]).then((answers) => {
             //TODO: figure out how to add to mysql stuff
