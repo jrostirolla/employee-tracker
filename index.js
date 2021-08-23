@@ -2,6 +2,7 @@ const inquirer = require('inquirer');
 const mySQL = require('mysql2');
 const cTable = require('console.table');
 const { response } = require('express');
+const { registerPrompt } = require('inquirer');
 
 const connection = mySQL.createConnection (
     {
@@ -16,9 +17,12 @@ const connection = mySQL.createConnection (
 
 startPoint = () => {
     console.log(`
-    Welcome to the supervisors
-    terminal. Select an option
+===========================
+    Welcome back to the 
+    supervisors terminal. 
+    Select an option 
     below to begin!
+===========================
     `)
     inquirer
         .prompt([
@@ -70,10 +74,13 @@ startPoint = () => {
 };
 
 viewDepartments = () => {
-    //TODO: fix output
     connection.query(
         `SELECT * FROM department`, function (err, result) {
-            console.table(result)
+            console.log(`\n`)
+                cTable(result)
+                for (i = 0; i < result.length; i++){
+                console.log(`\n`)
+                }
         }
     );
    startPoint()
@@ -112,30 +119,15 @@ viewRoles = () => {
         //TODO: fix output
         connection.query(
             `SELECT * FROM roles`, function (err, result) {
+                console.log(`\n`)
                 console.table(result)
+                for (i = 0; i < result.length-2; i++){
+                console.log(`\n`)
+                }
             }
         );
     startPoint();
 };
-
-addRole = () => {
-    // Call DB to pull all current roles from list 
-    
-    const resultArray = [];
-
-        connection.query(
-        `SELECT * FROM roles`, function (err, result) {
-            
-            roleArray.push(result)
-            console.log(`\nThis is the filled array: ${result}`)
-            console.log(`role array: ${roleArray}`)
-            console.log(`role array: ${resultArray}`)
-        },
-        
-    )
-
-    addRole2(roleArray);
-}
 
 addRole = () => {
     const roleArray = [];
@@ -144,8 +136,8 @@ addRole = () => {
         `SELECT * FROM department`, function (err, result) {  
             //test 1
             for (i = 0; i < result.length; i++) {
-                roleArray.push(JSON.stringify(result[i].department_name)),
-                console.log;
+                roleArray.push(result[i].department_name);
+
             }
         }     
     ),
@@ -171,12 +163,18 @@ addRole = () => {
                 choices: roleArray
             }
         ]).then((answers) => {
-            //TODO: figure out how to add to mysql stuff
-            const sql = `INSERT INTO roles
-            VALUE (?)`
-        const params = `${answers.newRole}, ${answers.roleSalary}, ${answers.departmentID}`
+            let refinedAnswer;
 
-        connection.query(sql, params, (err,result) => {
+            for (i = 0; i < roleArray.length; i++) {
+                if (answers.departmentID === roleArray[i]) {
+                    refinedAnswer = [i];
+                }
+            }
+
+            const sql = `INSERT INTO roles (title, salary, department_id)
+            VALUE ("${answers.newRole}", ${answers.roleSalary}, ${refinedAnswer})`
+
+        connection.query(sql, (err,result) => {
             if (err) {
                 console.log(err)
             } else {
@@ -191,13 +189,36 @@ viewEmployee = () => {
         //TODO: fix output
         connection.query(
             `SELECT * FROM employee`, function (err, result) {
+                console.log(`\n`)
                 console.table(result)
+                for (i = 0; i < result.length - 3; i++){
+                console.log(`\n`)
+                }
             }
         );
     startPoint();
 };
 
 addEmployee = () => {
+    const roleArray = [];
+    const employeeArray = [];
+
+    connection.query(
+        `SELECT * FROM roles`, function (err, result) {  
+            //test 1
+            for (i = 0; i < result.length; i++) {
+                roleArray.push(result[i].title);
+            }
+        }     
+    ),    
+    connection.query(
+        `SELECT * FROM employee`, function (err, result) {  
+            //test 1
+            for (i = 0; i < result.length; i++) {
+                employeeArray.push(result[i].first_name + " " + result[i].last_name);
+            }
+        }     
+    ),
     console.log(`
     ==================
      Employee Creator
@@ -217,24 +238,33 @@ addEmployee = () => {
                 type: 'list',
                 name:'roleID',
                 message: "What role does this person have?",
-                choices: [
-                    //TODO: figure out how to access the role DB for this entry
-                ]
+                choices: roleArray
             }, {
                 type: 'list',
                 name:'managerID',
                 message: "Who is this persons manager?",
-                choices: [
-                    //TODO: figure out how to access the employee DB for this entry
-                ]
+                choices: employeeArray
             }
         ]).then((answers) => {
-            //TODO: figure out how to add to mysql stuff
-            const sql = `INSERT INTO employee
-                VALUE (?)`
-            const params = `${answers.firstName}, ${answers.lastName}, ${answers.roleID}, ${answers.managerID}`
+            let roleAnswer;
+            let managerAnswer;
 
-            connection.query(sql, params, (err,result) => {
+            for (i = 0; i < roleArray.length; i++) {
+                if (answers.roleID === roleArray[i]) {
+                    roleAnswer = [i];
+                }
+            }
+
+            for (i = 0; i < employeeArray.length; i++) {
+                if (answers.managerID === employeeArray[i]) {
+                    managerAnswer = [i];
+                }
+            }
+
+            const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                VALUE ("${answers.firstName}", "${answers.lastName}", ${roleAnswer}, ${managerAnswer})`
+
+            connection.query(sql, (err,result) => {
                 if (err) {
                     console.log(err)
                 } else {
@@ -247,8 +277,93 @@ addEmployee = () => {
 };
 
 updateRole = () => {
-    console.log('update role selected'),
-    startPoint();
+    let firstName = [];
+    let lastName = [];
+    const roleArray2 = [];
+    const employeeArray2 = [];
+
+    connection.query(
+        `SELECT * FROM roles`, function (err, result) {  
+            //test 1
+            for (i = 0; i < result.length; i++) {
+                roleArray2.push(result[i].title);
+            }
+        }     
+    ),    
+    connection.query(
+        `SELECT * FROM employee`, function (err, result) {  
+            //test 1
+            for (i = 0; i < result.length; i++) {
+                employeeArray2.push(result[i].first_name + " " + result[i].last_name);
+            }
+        }     
+    ),
+
+    console.log('CODE REACHED HERE 302'),
+
+    console.log(`
+    ==================
+     Employee Updater
+    ==================
+    `),
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "dummyInput",
+                message: "How are you feeling today?"
+            }, {
+                type: 'list',
+                name: 'updaterName',
+                message: "What is the name of the employee you wish to update?",
+                choices: employeeArray2
+            }, {
+                type: 'list',
+                name: 'newRole',
+                message: "What would you like their role to be?",
+                choices: roleArray2,
+            }
+        ]).then((answers) => {
+            let roleAnswer;
+            let firstNameUpdate;
+            let lastNameUpdate;
+
+            for (i = 0; i < roleArray2.length; i++) {
+                if (answers.newRole === roleArray2[i]) {
+                    roleAnswer = [i];
+                }
+            }
+
+            for (i = 0; i < firstName.length; i++) {
+                if (answers.updaterName === employeeArray2[i]) {
+                    firstNameUpdate = firstName[i];
+                }
+            }
+
+            for (i = 0; i < lastName.length; i++) {
+                if (answers.updaterName === employeeArray2[i]) {
+                    lastNameUpdate = lastName[i];
+                }
+            }
+
+            console.log('CODE REACHED HERE 348')
+
+            const sql = `UPDATE employee
+                        SET role_id = "${roleAnswer}"
+                        WHERE first_name = "${firstNameUpdate}" AND last_name = "${lastNameUpdate}"`
+
+                        console.log('CODE REACHED HERE 354')
+                    
+            connection.query(sql, (err,result) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    console.log('New employee added')
+                }
+            });       
+            startPoint(); 
+        });
+
 };
 
 
