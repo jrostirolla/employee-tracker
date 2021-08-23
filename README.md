@@ -9,4 +9,4 @@ I found that while building out my program, I initially built the SQL database s
 * Tidying up of for loops implemented to solve the ID issue
 
 ## Tutorial
-For a tutorial of how to use my program, please click on this video link: 
+For a tutorial of how to use my program, please click on this video link: https://drive.google.com/file/d/12imbaRXKKaHbtDMnSpGRU45EtYtOi7nu/view?usp=sharing
