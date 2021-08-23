@@ -77,13 +77,13 @@ viewDepartments = () => {
     connection.query(
         `SELECT * FROM department`, function (err, result) {
             console.log(`\n`)
-                cTable(result)
+            console.table(result)
                 for (i = 0; i < result.length; i++){
                 console.log(`\n`)
                 }
-        }
+        },
     );
-   startPoint()
+   startPoint();
 };
 
 addDepartment = () => {
